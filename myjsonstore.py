@@ -7,6 +7,7 @@ from post_myjson import post
 from verbose import set_v
 
 
+
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-d", "--dest", dest="dest", help="destination for output")

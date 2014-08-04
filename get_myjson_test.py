@@ -1,12 +1,10 @@
-import get_myjson as g
+import get_myjson
 import unittest
-import json
 
 class GetFromMyjson(unittest.TestCase):
     def test_valid(self):
-        c = g.get_content("2qyms")
-        jsonc = json.loads(c)
-        self.assertEquals(jsonc.algor, "You are hearing me talk.")
+        data = get_myjson.get_content("2qyms")
+        self.assertEquals("You are hearing me talk", data["algore"])
         
 if __name__ == '__main__':
     unittest.main() 

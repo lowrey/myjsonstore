@@ -1,7 +1,6 @@
 import sys
 
 verbose = False
-NOTEPAD_CC_URL = 'http://notepad.cc/'
 
 def set_v(v):
     global verbose
