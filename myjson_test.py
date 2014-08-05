@@ -1,6 +1,5 @@
 import unittest
 import myjson
-import copy
 from os import path
 
 
@@ -46,6 +45,7 @@ class MyJsonFileTests(unittest.TestCase):
         myjson.Put().file(self.bin_id, path.join(self.testdir, "humungus.jpg"), "nothumungus.jpg")
         data = myjson.Get().content(self.bin_id)
         self.assertEquals("nothumungus.jpg", data["name"])
+
 
 if __name__ == '__main__':
     unittest.main()

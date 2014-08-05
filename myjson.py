@@ -32,27 +32,28 @@ def file_from_b64(b64data, outfile):
 class Post:
     POST_URL = "/bins"
 
-    #TODO make interface abstract
     def route(self, opts):
         if opts.file:
-            self.file(opts.file)
+            print(self.file(opts.file))
             return
-        data = ""
         if not opts.input:
             data = sys.stdin.read()
         else:
             data = opts.input
-        self.content(data)
+        print(self.content(data, isStr=True))
 
-    def file(self, bin_id, infile, fname=None):
+    def file(self, infile, fname=None):
         if not fname:
             fname = path.basename(infile)
         fstr = file_to_b64(infile)
         return self.content({"name": fname, "data": fstr})
 
-    def content(self, obj):
+    def content(self, obj, isStr=False):
         url = urlparse.urljoin(ROOT_URL, self.POST_URL)
-        payload = json.dumps(obj)
+        if isStr:
+            payload = obj
+        else:
+            payload = json.dumps(obj)
         headers = {'Content-Type': 'application/json'}
         r = requests.post(url, data=payload, headers=headers)
         r.raise_for_status()
@@ -65,11 +66,11 @@ class Post:
 class Get:
     GET_URL = "/bins/{}"
 
-    def route(self, dest, opts):
+    def route(self, opts):
         if opts.file:
-            self.file(dest, opts.file)
+            self.file(opts.get, opts.file)
         else:
-            print(self.content(dest))
+            print(self.content(opts.get))
 
     def file(self, bin_id, outdir):
         content = self.content(bin_id)
@@ -81,7 +82,7 @@ class Get:
     def content(self, bin_id):
         url = urlparse.urljoin(ROOT_URL, self.GET_URL.format(bin_id))
         r = requests.get(url)
-        print_v("GET successful: {}".format(bin_id))
+        print_v("GET successful: {}".format(url))
         return json.loads(r.text)
 
 
@@ -90,14 +91,13 @@ class Put:
 
     def route(self, opts):
         if opts.file:
-            self.file(opts.file)
+            self.file(opts.update, opts.file)
             return
-        data = ""
         if not opts.input:
             data = sys.stdin.read()
         else:
             data = opts.input
-        self.content(data)
+        self.content(opts.update, data, isStr=True)
 
     def file(self, bin_id, infile, fname=None):
         if not fname:
@@ -105,10 +105,13 @@ class Put:
         fstr = file_to_b64(infile)
         return self.content(bin_id, {"name": fname, "data": fstr})
 
-    def content(self, bin_id, obj):
+    def content(self, bin_id, obj, isStr=False):
         url = urlparse.urljoin(ROOT_URL, self.PUT_URL.format(bin_id))
-        payload = json.dumps(obj)
+        if isStr:
+            payload = obj
+        else:
+            payload = json.dumps(obj)
         headers = {'Content-Type': 'application/json'}
         r = requests.put(url, data=payload, headers=headers)
         r.raise_for_status()
-        print_v("PUT successful: {}".format(bin_id))
+        print_v("PUT successful: {}".format(url))
