@@ -1,13 +1,15 @@
 import base64
 import requests
 from verbose import print_v  # , write_v
-from io import StringIO
+from io import BytesIO
 import urllib.parse as urlparse
 import json
 import re
 import sys
+from os import path
 
 ROOT_URL = "https://api.myjson.com/"
+ENCODING = "utf-8"
 
 
 class Post:
@@ -24,16 +26,18 @@ class Post:
             data = opts.input
         self.content(data)
 
-    def file_tob64(self, infile):
+    @staticmethod
+    def file_tob64(infile):
         f = open(infile, 'rb')
-        outfile = StringIO.StringIO()
+        outfile = BytesIO()
         base64.encode(f, outfile)
         f.close()
-        return outfile.getvalue()
+        return str(outfile.getvalue(), ENCODING)
 
     def file(self, infile):
+        fname = path.basename(infile)
         fstr = self.file_tob64(infile)
-        self.content({"data": fstr})
+        return self.content({"name": fname, "data": fstr})
 
     def content(self, obj):
         url = urlparse.urljoin(ROOT_URL, self.POST_URL)
@@ -58,13 +62,16 @@ class Get:
             print(self.content(dest))
 
     # get a file encoded in b64
-    def file(self, bin_id, outfile):
-        f = open(outfile, 'w+b')
-        to_decode = StringIO.StringIO()
-        to_decode.write(self.content(bin_id))
+    def file(self, bin_id, outdir):
+        data = self.content(bin_id)
+        fpath = path.join(outdir, data["name"])
+        f = open(fpath, 'w+b')
+        to_decode = BytesIO()
+        to_decode.write(bytes(data["data"], ENCODING))
         to_decode.seek(0)
         base64.decode(to_decode, f)
         f.close()
+        return fpath
 
     def content(self, bin_id):
         url = urlparse.urljoin(ROOT_URL, self.GET_URL.format(bin_id))
